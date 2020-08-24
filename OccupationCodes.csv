@@ -1,0 +1,98 @@
+MajorGroup,MajorGroupDesc,Sub-Major Group,Sub-MajorGroupDesc,MinorGroup,MinorGroupDesc
+1,MANAGERS,11,"Chief Executives, General Managers and Legislators",111,"Chief Executives, General Managers and Legislators"
+1,MANAGERS,12,Farmers and Farm Managers,121,Farmers and Farm Managers
+1,MANAGERS,13,Specialist Managers,131,"Advertising, Public Relations and Sales Managers"
+1,MANAGERS,13,Specialist Managers,132,Business Administration Managers
+1,MANAGERS,13,Specialist Managers,133,"Construction, Distribution and Production Managers"
+1,MANAGERS,13,Specialist Managers,134,"Education, Health and Welfare Services Managers"
+1,MANAGERS,13,Specialist Managers,135,ICT Managers
+1,MANAGERS,13,Specialist Managers,139,Miscellaneous Specialist Managers
+1,MANAGERS,14,"Hospitality, Retail and Service Managers",141,Accommodation and Hospitality Managers
+1,MANAGERS,14,"Hospitality, Retail and Service Managers",142,Retail Managers
+1,MANAGERS,14,"Hospitality, Retail and Service Managers",149,"Miscellaneous Hospitality, Retail and Service Managers"
+2,PROFESSIONALS,21,Arts and Media Professionals,211,Arts Professionals
+2,PROFESSIONALS,21,Arts and Media Professionals,212,Media Professionals
+2,PROFESSIONALS,22,"Business, Human Resource and Marketing Professionals",221,"Accountants, Auditors and Company Secretaries"
+2,PROFESSIONALS,22,"Business, Human Resource and Marketing Professionals",222,"Financial Brokers and Dealers, and Investment Advisers"
+2,PROFESSIONALS,22,"Business, Human Resource and Marketing Professionals",223,Human Resource and Training Professionals
+2,PROFESSIONALS,22,"Business, Human Resource and Marketing Professionals",224,Information and Organisation Professionals
+2,PROFESSIONALS,22,"Business, Human Resource and Marketing Professionals",225,"Sales, Marketing and Public Relations Professionals"
+2,PROFESSIONALS,23,"Design, Engineering, Science and Transport Professionals",231,Air and Marine Transport Professionals
+2,PROFESSIONALS,23,"Design, Engineering, Science and Transport Professionals",232,"Architects, Designers, Planners and Surveyors"
+2,PROFESSIONALS,23,"Design, Engineering, Science and Transport Professionals",233,Engineering Professionals
+2,PROFESSIONALS,23,"Design, Engineering, Science and Transport Professionals",234,Natural and Physical Science Professionals
+2,PROFESSIONALS,24,Education Professionals,241,School Teachers
+2,PROFESSIONALS,24,Education Professionals,242,Tertiary Education Teachers
+2,PROFESSIONALS,24,Education Professionals,249,Miscellaneous Education Professionals
+2,PROFESSIONALS,25,Health Professionals,251,Health Diagnostic and Promotion Professionals
+2,PROFESSIONALS,25,Health Professionals,252,Health Therapy Professionals
+2,PROFESSIONALS,25,Health Professionals,253,Medical Practitioners
+2,PROFESSIONALS,25,Health Professionals,254,Midwifery and Nursing Professionals
+2,PROFESSIONALS,26,ICT Professionals,261,"Business and Systems Analysts, and Programmers"
+2,PROFESSIONALS,26,ICT Professionals,262,"Database and Systems Administrators, and ICT Security Specialists"
+2,PROFESSIONALS,26,ICT Professionals,263,ICT Network and Support Professionals
+2,PROFESSIONALS,27,"Legal, Social and Welfare Professionals",271,Legal Professionals
+2,PROFESSIONALS,27,"Legal, Social and Welfare Professionals",272,Social and Welfare Professionals
+3,TECHNICIANS AND TRADES WORKERS,31,"Engineering, ICT and Science Technicians",311,"Agricultural, Medical and Science Technicians"
+3,TECHNICIANS AND TRADES WORKERS,31,"Engineering, ICT and Science Technicians",312,Building and Engineering Technicians
+3,TECHNICIANS AND TRADES WORKERS,31,"Engineering, ICT and Science Technicians",313,ICT and Telecommunications Technicians
+3,TECHNICIANS AND TRADES WORKERS,32,Automotive and Engineering Trades Workers,321,Automotive Electricians and Mechanics
+3,TECHNICIANS AND TRADES WORKERS,32,Automotive and Engineering Trades Workers,322,Fabrication Engineering Trades Workers
+3,TECHNICIANS AND TRADES WORKERS,32,Automotive and Engineering Trades Workers,323,Mechanical Engineering Trades Workers
+3,TECHNICIANS AND TRADES WORKERS,32,Automotive and Engineering Trades Workers,324,"Panelbeaters, and Vehicle Body Builders, Trimmers and Painters"
+3,TECHNICIANS AND TRADES WORKERS,33,Construction Trades Workers,331,"Bricklayers, and Carpenters and Joiners"
+3,TECHNICIANS AND TRADES WORKERS,33,Construction Trades Workers,332,Floor Finishers and Painting Trades Workers
+3,TECHNICIANS AND TRADES WORKERS,33,Construction Trades Workers,333,"Glaziers, Plasterers and Tilers"
+3,TECHNICIANS AND TRADES WORKERS,33,Construction Trades Workers,334,Plumbers
+3,TECHNICIANS AND TRADES WORKERS,34,Electrotechnology and Telecommunications Trades Workers,341,Electricians
+3,TECHNICIANS AND TRADES WORKERS,34,Electrotechnology and Telecommunications Trades Workers,342,Electronics and Telecommunications Trades Workers
+3,TECHNICIANS AND TRADES WORKERS,35,Food Trades Workers,351,Food Trades Workers
+3,TECHNICIANS AND TRADES WORKERS,36,Skilled Animal and Horticultural Workers,361,"Animal Attendants and Trainers, and Shearers"
+3,TECHNICIANS AND TRADES WORKERS,36,Skilled Animal and Horticultural Workers,362,Horticultural Trades Workers
+3,TECHNICIANS AND TRADES WORKERS,39,Other Technicians and Trades Workers,391,Hairdressers
+3,TECHNICIANS AND TRADES WORKERS,39,Other Technicians and Trades Workers,392,Printing Trades Workers
+3,TECHNICIANS AND TRADES WORKERS,39,Other Technicians and Trades Workers,393,"Textile, Clothing and Footwear Trades Workers"
+3,TECHNICIANS AND TRADES WORKERS,39,Other Technicians and Trades Workers,394,Wood Trades Workers
+3,TECHNICIANS AND TRADES WORKERS,39,Other Technicians and Trades Workers,399,Miscellaneous Technicians and Trades Workers
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,41,Health and Welfare Support Workers,411,Health and Welfare Support Workers
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,42,Carers and Aides,421,Child Carers
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,42,Carers and Aides,422,Education Aides
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,42,Carers and Aides,423,Personal Carers and Assistants
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,43,Hospitality Workers,431,Hospitality Workers
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,44,Protective Service Workers,441,"Defence Force Members, Fire Fighters and Police"
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,44,Protective Service Workers,442,Prison and Security Officers
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,45,Sports and Personal Service Workers,451,Personal Service and Travel Workers
+4,COMMUNITY AND PERSONAL SERVICE WORKERS,45,Sports and Personal Service Workers,452,Sports and Fitness Workers
+5,CLERICAL AND ADMINISTRATIVE WORKERS,51,Office Managers and Program Administrators,511,"Contract, Program and Project Administrators"
+5,CLERICAL AND ADMINISTRATIVE WORKERS,51,Office Managers and Program Administrators,512,Office and Practice Managers
+5,CLERICAL AND ADMINISTRATIVE WORKERS,52,Personal Assistants and Secretaries,521,Personal Assistants and Secretaries
+5,CLERICAL AND ADMINISTRATIVE WORKERS,53,General Clerical Workers,531,General Clerks
+5,CLERICAL AND ADMINISTRATIVE WORKERS,53,General Clerical Workers,532,Keyboard Operators
+5,CLERICAL AND ADMINISTRATIVE WORKERS,54,Inquiry Clerks and Receptionists,541,Call or Contact Centre Information Clerks
+5,CLERICAL AND ADMINISTRATIVE WORKERS,54,Inquiry Clerks and Receptionists,542,Receptionists
+5,CLERICAL AND ADMINISTRATIVE WORKERS,55,Numerical Clerks,551,Accounting Clerks and Bookkeepers
+5,CLERICAL AND ADMINISTRATIVE WORKERS,55,Numerical Clerks,552,Financial and Insurance Clerks
+5,CLERICAL AND ADMINISTRATIVE WORKERS,56,Clerical and Office Support Workers,561,Clerical and Office Support Workers
+5,CLERICAL AND ADMINISTRATIVE WORKERS,59,Other Clerical and Administrative Workers,591,Logistics Clerks
+5,CLERICAL AND ADMINISTRATIVE WORKERS,59,Other Clerical and Administrative Workers,599,Miscellaneous Clerical and Administrative Workers
+6,SALES WORKERS,61,Sales Representatives and Agents,611,Insurance Agents and Sales Representatives
+6,SALES WORKERS,61,Sales Representatives and Agents,612,Real Estate Sales Agents
+6,SALES WORKERS,62,Sales Assistants and Salespersons,621,Sales Assistants and Salespersons
+6,SALES WORKERS,63,Sales Support Workers,631,Checkout Operators and Office Cashiers
+6,SALES WORKERS,63,Sales Support Workers,639,Miscellaneous Sales Support Workers
+7,MACHINERY OPERATORS AND DRIVERS,71,Machine and Stationary Plant Operators,711,Machine Operators
+7,MACHINERY OPERATORS AND DRIVERS,71,Machine and Stationary Plant Operators,712,Stationary Plant Operators
+7,MACHINERY OPERATORS AND DRIVERS,72,Mobile Plant Operators,721,Mobile Plant Operators
+7,MACHINERY OPERATORS AND DRIVERS,73,Road and Rail Drivers,731,"Automobile, Bus and Rail Drivers"
+7,MACHINERY OPERATORS AND DRIVERS,73,Road and Rail Drivers,732,Delivery Drivers
+7,MACHINERY OPERATORS AND DRIVERS,73,Road and Rail Drivers,733,Truck Drivers
+7,MACHINERY OPERATORS AND DRIVERS,74,Storepersons,741,Storepersons
+8,LABOURERS,81,Cleaners and Laundry Workers,811,Cleaners and Laundry Workers
+8,LABOURERS,82,Construction and Mining Labourers,821,Construction and Mining Labourers
+8,LABOURERS,83,Factory Process Workers,831,Food Process Workers
+8,LABOURERS,83,Factory Process Workers,832,Packers and Product Assemblers
+8,LABOURERS,83,Factory Process Workers,839,Miscellaneous Factory Process Workers
+8,LABOURERS,84,"Farm, Forestry and Garden Workers",841,"Farm, Forestry and Garden Workers"
+8,LABOURERS,85,Food Preparation Assistants,851,Food Preparation Assistants
+8,LABOURERS,89,Other Labourers,891,Freight Handlers and Shelf Fillers
+8,LABOURERS,89,Other Labourers,899,Miscellaneous Labourers

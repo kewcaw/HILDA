@@ -1,0 +1,119 @@
+---
+title: "Importing HILDA Files v01"
+author: "Craig Whiffin"
+date: "17/09/2019"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+# The knitr optins determine how eac chunk of code is handled in an RMarkdown file
+# See https://yihui.name/knitr/options/
+knitr::opts_chunk$set(echo = TRUE)
+
+# Reset the environment to avoid using old dataframes, variables etc.
+rm(list=ls())
+
+# This section is reserved for adding libraries used throughout the file. Any new libraries will be added here
+# at the beginning of the code so they are easy to find / amend in the future.
+library(tidyverse)        # loads lots of useful packages
+library(haven)            # converts the HILDA files from SPSS format (system data file format) - also reads others
+                          # proprietary format for the SPSS statistical software application
+
+# Locating the data files to import - allocate the starting point
+
+# Path for HILDA files using secure PC at home
+paths <- c(
+  "E:/IN27/HILDA/2. SPSS 170c (Zip File 1 of 2 - Combined Data Files)",
+  "E:/IN27/HILDA/2. SPSS 170c (Zip File 2 of 2 - Other Data Files)"
+  )
+
+# Path for HILDA files using secure laptop
+# TBC when next using laptop
+
+
+```
+# Background
+The [Household, Income and Labour Dynamics in Australia (HILDA) Survey, GENERAL RELEASE 17 (Waves 1-17)] (https://dataverse.ada.edu.au/dataset.xhtml?persistentId=doi:10.26193/PTKLYP) were provided by the Australian Data Archive (ADA). This document searches for the data files from a specified directory and converts each of them to an RData file for convenient and better performance. The specified paths are:
+
+```{r paths, comment = NA, echo = FALSE}
+paths
+```
+
+The RData files will be found in the `..\HILDA RData` directory.
+
+## Find and list the HILDA data files to be converted
+The files share a '.sav' extension, so only these need to be located and converted.
+
+```{r find and store the location of the files}
+# Set up some variables for lists of file and path names
+pathname_list <- list()
+filename_list <- list()
+
+for(p in paths){
+  #get the entire filename including path
+  pathname_list[[p]] <- list.files(path = p, pattern="*.sav", full.names = TRUE)
+  #get only the filename of the specific file
+  filename_list[[p]] <- list.files(path = p, pattern="*.sav", full.names = FALSE)
+}
+
+# Now we have the file and path names, let's put them in a table where we can access them at leisure
+HILDA_files <- tibble(
+  filename=unlist(filename_list, use.names = FALSE),
+  pathname=unlist(pathname_list, use.names = FALSE)
+)
+
+# Remove some variables no longer needed
+rm(p, paths, pathname_list, filename_list)
+
+```
+
+The resulting HILDA_files table looks like this:
+```{r show HILDA_files table, echo=FALSE, comment = FALSE}
+HILDA_files
+```
+
+# Convert files to RData file format (`.rda`)
+### Set up the names and destination for new .rda files
+```{r set up rda file destination}
+# We can use the HILDA_files table to open each file and convert to RData in an specified output directory
+HILDA_files %>%
+  mutate(
+    basename = str_remove(filename, ".sav$"),       # Remove the .sav extension from each file
+    Robjname = make.names(basename),                # Make syntactically valid names out of character vectors.
+    Rfilename = str_c(Robjname, ".rda"),            # Append .rda to the new valid name
+    Rpathname = str_c("E:/IN27/HILDA/data/", Rfilename)        # This is where we'll put the new rdata (.rda) files
+  ) -> HILDA_files
+```
+
+### Open each file and convert to the Rdata file format ('.rda`)
+Using the haven package, we'll read in each file and perform the conversion. The HILDA_files table will be used
+to inform us of the source path and files and the destination path and files.
+
+```{r open and convert each file}
+start_time_overall <- Sys.time()
+for (i in 1:nrow(HILDA_files)){
+  start_time <- Sys.time()         # let's time how long it takes - start the clock here
+  cat("Importing ", HILDA_files$filename[i], "...")        # some information for the user
+  
+  tmp <- read_sav(HILDA_files$pathname[i], user_na=TRUE)      # Import SPSS file as tmp file using
+                                                              # user defined NA codes
+  assign(HILDA_files$Robjname[i], tmp)           # Rename tmp to the new robjname file
+                                                 # Assign() - Assign a value to a name in an environment.
+  
+  cat("Writing ", HILDA_files$Rfilename[i], "...")   # More information for the user
+  save(
+    list=c(HILDA_files$Robjname[i]),
+    file=HILDA_files$Rpathname[i]
+    )
+    
+  rm(list=c(HILDA_files$Robjname[i]), tmp)     # Tidy up memory
+  cat("Completed.")                            # Confirm completed
+  print(Sys.time() - start_time)               # Show how long it took
+}
+  
+print(Sys.time() - start_time_overall)         # Show how long it took overall
+rm(start_time, start_time_overall, i)
+```
+
+

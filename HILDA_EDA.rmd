@@ -1,0 +1,769 @@
+---
+title: "HILDA_EDA"
+author: "Craig Whiffin 02389703"
+date: "17/09/2019"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE, echo = T, results = F}
+# The knitr optins determine how eac chunk of code is handled in an RMarkdown file
+# See https://yihui.name/knitr/options/
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+# Reset the environment to avoid using old dataframes, variables etc.
+rm(list=ls())
+
+# This section is reserved for adding libraries used throughout the file. Any new libraries will be added here
+# at the beginning of the code so they are easy to find / amend in the future.
+library(tidyverse)        # loads lots of useful packages
+library(haven)            # converts the HILDA files from SPSS format (system data file format) - also reads others
+library(stringr)          # proprietary format for the SPSS statistical software application
+
+
+# Fix library dependencies with the select function
+dselect <- dplyr::select
+
+# Load functions for working with HILDA
+source("./Functions/Extract.R")
+
+# Locating the data files to import - allocate the starting point
+
+# Path for HILDA files using secure PC at home
+paths <- c(
+  "E:/IN27/HILDA/2. SPSS 170c (Zip File 1 of 2 - Combined Data Files)",
+  "E:/IN27/HILDA/2. SPSS 170c (Zip File 2 of 2 - Other Data Files)"
+  )
+
+```
+# Background
+The [Household, Income and Labour Dynamics in Australia (HILDA) Survey, GENERAL RELEASE 17 (Waves 1-17)] (https://dataverse.ada.edu.au/dataset.xhtml?persistentId=doi:10.26193/PTKLYP) were provided by the Australian Data Archive (ADA). This document searches for the data files from a specified directory and converts each of them to an RData file for convenient and better performance. The specified paths are:
+
+```{r paths, comment=NA}
+paths
+```
+
+The RData files will be found in the `..\HILDA RData` directory.
+
+## Find and list the HILDA data files to be converted
+The files share a '.sav' extension, so only these need to be located and converted.
+
+```{r find and store the location of the files}
+# Set up some variables for lists of file and path names
+pathname_list <- list()
+filename_list <- list()
+
+for(p in paths){
+  #get the entire filename including path
+  pathname_list[[p]] <- list.files(path = p, pattern="*.sav", full.names = TRUE)
+  #get only the filename of the specific file
+  filename_list[[p]] <- list.files(path = p, pattern="*.sav", full.names = FALSE)
+}
+
+# Now we have the file and path names, let's put them in a table where we can access them at leisure
+HILDA_files <- tibble(
+  filename=unlist(filename_list, use.names = FALSE),
+  pathname=unlist(pathname_list, use.names = FALSE)
+)
+
+# Remove some variables no longer needed
+rm(p, paths, pathname_list, filename_list)
+
+```
+
+The resulting HILDA_files table looks like this:
+```{r show HILDA_files table}
+HILDA_files
+```
+
+# Convert files to RData file format (`.rda`)
+### Set up the names and destination for new .rda files
+```{r set up rda file destination}
+# We can use the HILDA_files table to open each file and convert to RData in an specified output directory
+HILDA_files %>%
+  mutate(
+    basename = str_remove(filename, ".sav$"),       # Remove the .sav extension from each file
+    Robjname = make.names(basename),                # Make syntactically valid names out of character vectors.
+    Rfilename = str_c(Robjname, ".rda"),            # Append .rda to the new valid name
+    Rpathname = str_c("E:/IN27/HILDA/data/", Rfilename)        # This is where we'll put the new rdata (.rda) files
+  ) -> HILDA_files
+```
+
+### Open each file and convert to the Rdata file format ('.rda`)
+Using the haven package, we'll read in each file and perform the conversion. The HILDA_files table will be used
+to inform us of the source path and files and the destination path and files.
+
+```{r open and convert each file}
+# start_time_overall <- Sys.time()
+# for (i in 1:nrow(HILDA_files)){
+#   start_time <- Sys.time()         # let's time how long it takes - start the clock here
+#   cat("Importing ", HILDA_files$filename[i], "...")        # some information for the user
+#   
+#   tmp <- read_sav(HILDA_files$pathname[i], user_na=TRUE)      # Import SPSS file as tmp file using
+#                                                               # user defined NA codes
+#   assign(HILDA_files$Robjname[i], tmp)           # Rename tmp to the new robjname file
+#                                                  # Assign() - Assign a value to a name in an environment.
+#   
+#   cat("Writing ", HILDA_files$Rfilename[i], "...")   # More information for the user
+#   save(
+#     list=c(HILDA_files$Robjname[i]),
+#     file=HILDA_files$Rpathname[i]
+#     )
+#     
+#   rm(list=c(HILDA_files$Robjname[i]), tmp)     # Tidy up memory
+#   cat("Completed.")                            # Confirm completed
+#   print(Sys.time() - start_time)               # Show how long it took
+# }
+#   
+# print(Sys.time() - start_time_overall)         # Show how long it took overall
+# rm(start_time, start_time_overall, i)
+```
+
+
+Allocate file metadata to better understand what each file contains.
+```{r}
+#Paths for home PC
+hildapath <- "E:/IN27/HILDA/data"
+
+#Paths for laptop
+#hildapath <- "C:\\Users\\cawhi\\IN27\\HILDA\\Data"
+
+
+tibble(
+  filename=list.files(path=hildapath, pattern="*.rda", full.names = FALSE),
+  pathname=list.files(path=hildapath, pattern="*.rda", full.names = TRUE)
+  
+  
+) %>%
+  mutate(
+    object=str_remove(filename, ".rda"),
+    wave=str_sub(object, -5, -5),
+    year=as.integer(2000+match(wave,letters))
+    ) -> HILDA_Files
+
+```
+
+Check what this looks like:
+
+```{r}
+HILDA_Files
+```
+
+### Variables to consider
+Some studies suggest some additional variables should be considered for job satisfaction. 
+
+\setlength{\leftskip}{2cm}
+Dumoulin, A. (2008). Understanding health and well-being interventions at work: An evaluation of three health care organizations (ProQuest Dissertations Publishing). Retrieved from http://search.proquest.com/docview/304623345/
+\setlength{\leftskip}{0pt}
+
+- age (maybe some overlap with "year")
+- education
+- income (maybe some overlap with "total pay satisfaction")
+- gender
+
+Let's collect these and the occupation of the respondent and both parents (if available) to explore any potential relationships.
+
+
+After looking through the [HILDA Online data dictionary](https://www.online.fbe.unimelb.edu.au/HILDAodd/Default.aspx), I found the following variables:
+
+* [hhrpid](https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=hhrpid) Household person ID
+* [jbmo61](https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=jbmo61) DV: C11 Occupation 1-digit ANZSCO 2006
+* [jbmo62](https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=jbmo62) DV: E13 Occupation 2-digit ANZSCO 2006
+* [fmfo61](https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=fmfo61) History: Father's occupation 1-digit ANZSCO 2006
+* [fmmo61](https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=fmmo61) History: Mother's occupation 1-digit ANZSCO 2006
+* [jbmsall](https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=jbmsall) Overall job satisfaction (0-10)
+* [hgage] (https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=hgage) DV: Age last birthday at June 30 2017
+* [edhigh1] (https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=edhigh1) History: Highest education level achieved]
+* [hgsex] (https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=hgsex) Sex (1 Male, 2 Female)
+
+
+```{r extract and rename variables}
+# Extract(
+#  variables = c("hhrpid", #household person ID
+#                "jbmo61", #respondent's occupation (level 1)
+#                "jbmo62", #respondent's occupation (level 2)
+#                "jbmsall", #overall job satisfaction
+#                "hgage", #age of respondent
+#                "edhigh1", #highest education level
+#                "hgsex", #sex of respondent
+#                "fmfo61", #father's occupation code
+#                "fmmo61", #mother's occupation code
+# 
+#                # Additional variables later included
+#                "wscmei" # weekly gross ages & salary (main job)
+#  ),
+#  xwave.variables="xwaveid",
+#  from=filter(HILDA_Files, str_detect(filename, 'Rperson.[a-q]'))
+# ) -> df_jobdetails
+# 
+# # And rename the variables we want to work with
+# names(df_jobdetails)[names(df_jobdetails) == "jbmsall"] <- "job_satisfaction"
+# names(df_jobdetails)[names(df_jobdetails) == "jbmo61"] <- "jobcode_lev1"
+# names(df_jobdetails)[names(df_jobdetails) == "jbmo62"] <- "jobcode_lev2"
+# names(df_jobdetails)[names(df_jobdetails) == "hgage"] <- "age"
+# names(df_jobdetails)[names(df_jobdetails) == "edhigh1"] <- "highest_edu"
+# names(df_jobdetails)[names(df_jobdetails) == "hgsex"] <- "sex"
+# names(df_jobdetails)[names(df_jobdetails) == "fmfo61"] <- "jobcode_f"
+# names(df_jobdetails)[names(df_jobdetails) == "fmmo61"] <- "jobcode_m"
+# 
+# # Added later
+# names(df_jobdetails)[names(df_jobdetails) == "wscmei"] <- "wkly_wages"
+# 
+ load(file = "df_jobdetails.rda")
+#save(df_jobdetails, file = "df_jobdetails.rda")
+```
+
+```{r explore the general job satisfaction levels without predictor variables}
+# Plot distribution for all waves
+ggplot(data = df_jobdetails, aes(x = factor(job_satisfaction)))+
+  geom_histogram(stat = "count")+
+  theme_bw()+
+  labs(x = "Overall Job Satisfaction (0-10)",
+       y = "Count",
+       title = "Overall Job Satisfaction Counts between 2011 and 2017 (inclusively)",
+       caption = "A very large number of \"1 Not Asked\" job satisfaction values can be seen (over 87,000)")
+```
+
+Interestingly, we see quite a few values below 0 which are response codes that do not represent a satisfaction level but missing responses,  according to the HILDA data dictionary here [https://www.online.fbe.unimelb.edu.au/HILDAodd/KWCrossWaveCategoryDetails.aspx?varnt=jbmsall]. The negative codes are `-1 = Not asked`, `-2 = Not applicable`, `-3 = Don't know`, `-4 = Refused / Not stated`. "Not applicable" is the most interesting of these however no further investigation is required before deciding to remove the observations with these job satisfaction values. The total number of observations in the histogram above (before removal) is `r nrow(df_jobdetails)`. Let's remove these to find out how many observations are left.
+
+```{r remove error codes for job satisfaction level}
+# Just keep the valid job satisfaction responses
+df_jobdetails <- subset(df_jobdetails, job_satisfaction >= 0)
+
+```
+
+Now we are left with `r nrow(df_jobdetails)` observations. That's approximately 60% of what we had originally.
+
+Next, we need to assign some value that aren't just codes for the following variables: jobcode_lev1, jobcode_lev2, highest_edu, sex, jobcode_f and jobcode_m
+
+### Job Codes
+First, we'll replace the job codes with occupation names for: jobcode_lev1, jobcode_lev2, jobcode_f and jobcode_m
+
+The job codes and names were taken from the official file released by the Australian Bureau of Statistics [https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1220.0First%20Edition,%20Revision%201?OpenDocument]. The codes follow the ANZSCO standard for job classification. The hierachy has a total of 5 levels where 1 is the most general and 5 is the job specific title. For example, the job title "Member of Parliament" (level 5) has  a level 4 description of "Legislators", a level 3 description of "Chief Executives 
+
+Level 1 - Highest job grouping
+Level 2 - Second level in job classification hierarchy
+Level 3 - Third level in job classification heirarchy.
+
+Each level classifies an occupation more specifically. For example, the job title "Advertising Manager" sits at level 5. Its level 4 and 3  occupation titles are "Advertising, Public Relationships and Sales Managers" (repeated), level 2 is "Specialist Manager" and the top level is "Manager". For this project, we will first look at level 2.
+
+#### Respondent's Occupation
+```{r initial job code exploration}
+# Respondent
+ggplot(data = df_jobdetails, aes(x = factor(jobcode_lev2)))+
+  geom_histogram(stat = "count", col = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  labs(x = "Job Code (Level 2)",
+       y = "Count", 
+       title = "Occupation Counts Across All Waves for Level 2 Group Occupations (2001 to 2017)")
+```
+
+There appears to be far too many to manage graphically. It's also interesting to note some negative values which are error codes as provided by the HILDA data dictionary [https://www.online.fbe.unimelb.edu.au/HILDAodd/VariableDetails.aspx?varn=jbmo61&varw=1]. These should be excluded from the respondent's job code as well as for father and mother. First let's visual level 1 to see if this is a better plot.
+
+```{r follow up job code exploration}
+# Respondent
+ggplot(data = df_jobdetails, aes(x = factor(jobcode_lev1)))+
+  geom_histogram(stat = "count", col = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  labs(x = "Job Code (Level 1)",
+       y = "Count", 
+       title = "Occupation Counts Across All Waves for Level 1 Group Occupations (2001 to 2017)")
+
+```
+
+This is much more comprehendable and manageable. It also clearly shows the error codes which will be removed.
+
+```{r exclude invalid job codes}
+# Respondent
+df_jobdetails <- filter(df_jobdetails, jobcode_lev1 >= 0)
+```
+
+This seemed to remove about 117 observations which is acceptable. We'd better check the parents' job codes too. If both parents job titles are errors, then those rows should be removed because we can't assume a match nor can we assume a "non match". Let's see how many we'd be dealing with.
+
+```{r check error codes for parents}
+nrow(filter(df_jobdetails, (jobcode_f < 0 & jobcode_m <0)))
+```
+
+There appear to be about 3834 rows that have both father's and mother's job codes as errors. These will be removed.
+
+```{r remove error codes for parents}
+# Only remove errors where BOTH parents aren't a match
+df_jobdetails <- filter(df_jobdetails, (jobcode_f >= 0 | jobcode_m >= 0))
+```
+
+#### Respondent-Parent Job Match
+A binary variable will be derived that indicates whether the respondent's occupation matches *at least one* of their parents' occupations. There is a challenge to be overcome here regarding valid job codes for father and mother. The dataset currently contains only valid job codes for the respondent *and* all codes, including invalid, for father and mother *except* where *both* father and mother job codes are invalid. The problem with this is that if we derived a field with at least one parent job code match, we will face the following combinations:
+
+- respondent's job matches father's job and mother's job (both match)
+- respondent's job matches father's job but not mother's job (single match)
+- respondent's job matches mather's job but not father's job (single match)
+- respondent's job does not match father's nor mother's job (no match)
+
+All of these three are acceptable. Once we consider invalid job codes, this gets messier.
+
+- respondent's job matches father's job but not mother's error job code (single match)
+- respondent's job matches mother's job code but not father's error job code (single match)
+
+The above two are acceptable since at least one match is found.
+
+- respondent's job does not match father's job code and does not match mother's invalid job code (no match)
+- respondent's job does not match mother's job code and does not match father's invalid job code (no match)
+
+The above two scenarios are unacceptable since it's possible that the unknown (invalid) job code matches. To summarise, if there is an invalid job code from one parent, the other parent's job code must match the respondent's to be included in the dataset. If it doesn't, we cannot leave this in the dataset and call it a "non match" since we cannot be sure this is so. Perhaps it was a match? The consequence of this is to make sure that if neither parents' job code match the respondent's, and one of the parents' job codes is invalid, then the observation must be removed.
+
+Next, we'll derive two new column:
+
+- jobmatch (at least one parent's jobcode matches) which will contain a 0 if neither parent matches or a 1 if *at least one* parent matches
+
+```{r derive jobmatch column}
+# Create a new column for jobmatch
+df_jobdetails$jobmatch <- NA
+
+## Testing
+df_jobdetails$jobmatch <- ifelse(df_jobdetails$jobcode_lev1 == df_jobdetails$jobcode_f |
+      df_jobdetails$jobcode_lev1 == df_jobdetails$jobcode_m,
+      # At least one occupation matches (yes condition)
+      1,
+      # The occupations don't match (no condition)
+      0)
+
+```
+
+Now we have derived matches and nonmatches. A quick plot will show us visually.
+
+```{r explore proportion of matches vs nonmatches for jobcodes}
+ggplot(data = df_jobdetails, aes(x = factor(jobmatch)))+
+  geom_histogram(stat = "count")+
+  theme_bw()
+
+table(df_jobdetails$jobmatch)
+```
+
+We can say there is roughly twice as many respondents whose jobs do not match their father's or mother's job than those whose jobs match at least their father's or mother's. However, we now must remove the rows mentioned earlier where jobmatch = 0 (not one match) yet one of the parent's jobcodes is invalid (<0).
+
+```{r remove unknown matches}
+# Remove the unknown matches
+df_jobdetails <- df_jobdetails[!(df_jobdetails$jobmatch == 0 & (df_jobdetails$jobcode_f < 0 | df_jobdetails$jobcode_m < 0)),]
+
+```
+
+This takes the number of observations down to `r nrow(df_jobdetails)`. Next, let's replace the job code with job occupation titles. Although the error codes won't match, this is no problem since the actual occupation of father / mother isn't in question, just if they match or not.
+
+```{r Update job codes to occupation names, echo=FALSE}
+# Import external list of job codes obtained from....
+jobcodes <- read_csv("occupationCodes.csv")
+
+# Tidy up the level 2 objects
+df_jobdetails <- dselect(df_jobdetails, -c("jobcode_lev2"))
+
+# Just select the unique level 1 job titles
+majcodes <- unique(subset(jobcodes, select = c(`MajorGroup`, `MajorGroupDesc`)))
+head(majcodes)
+
+# Merge the occupation titles with the codes in df_jobdetails
+df_jobdetails <- merge(x = df_jobdetails, y = majcodes, by.x = "jobcode_lev1", by.y ="MajorGroup", x.all=TRUE)
+
+# And rename the column
+names(df_jobdetails)[names(df_jobdetails) == "MajorGroupDesc"] <- "occupation_lev1"
+
+head(df_jobdetails)
+```
+
+Now we have `occupation_lev1` at the top level for jobs. Let's re-plot to see if this is better visually.
+```{r explore level 1 occupation codes visually}
+# Plot level 1 occupation codes to explore visually
+ggplot(data = df_jobdetails, aes(x = factor(occupation_lev1)))+
+  geom_histogram(stat = "count")+
+  theme_bw()+
+  labs(x = "Level 1 Occupation Titles",
+       y = "Count",
+       title = "Level 1 Occupation Title Counts from 2011 to 2017")
+```
+This looks much better however there are a few things to tidy up including the values being in all caps and hard to read on the plot.
+
+```{r explore updated level 1 occupation codes visually}
+# Fix the UPPER CASE problem with the values for occupation_lev1
+df_jobdetails$occupation_lev1 <- str_to_title(df_jobdetails$occupation_lev1)
+
+# Plot level 1 occupation codes to explore visually
+ggplot(data = df_jobdetails, aes(x = factor(occupation_lev1)))+
+  geom_histogram(stat = "count")+
+  theme_bw()+
+  labs(x = "Level 1 Occupation Titles",
+       y = "Count",
+       title = "Level 1 Occupation Title Counts from 2011 to 2017")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+```
+
+That's much better.
+
+#### Parents' Occupation
+```{r convert father occupation job titles}
+# Convert father's occupation code and rename column
+df_jobdetails <- merge(x = df_jobdetails, y = majcodes, by.x = "jobcode_f", by.y ="MajorGroup", all.x=TRUE)
+names(df_jobdetails)[names(df_jobdetails) == "MajorGroupDesc"] <- "occupation_f"
+df_jobdetails$occupation_f <- str_to_title(df_jobdetails$occupation_f)
+
+# Convert mother's occupation code and rename column
+df_jobdetails <- merge(x = df_jobdetails, y = majcodes, by.x = "jobcode_m", by.y ="MajorGroup", all.x=TRUE)
+names(df_jobdetails)[names(df_jobdetails) == "MajorGroupDesc"] <- "occupation_m"
+df_jobdetails$occupation_m <- str_to_title(df_jobdetails$occupation_m)
+
+head(df_jobdetails)
+```
+
+We see some NA (missing) values for occupation_m however this isn't a concern. `jobmatch` is the column we're interested in later.
+
+### Education
+The highest education received has been extracted from HILDA data set and renamed to `highest_edu`. According to the HILDA data dictionary [https://www.online.fbe.unimelb.edu.au/HILDAodd/VariableDetails.aspx?varn=edhigh1&varw=1], there are 8 levels ranging from 1 - Postgrad-masters or doctorate to 10 - Undetermined. Codes 6 and 7 are not used.
+
+```{r explore highested education visually, echo=FALSE}
+ggplot(data = df_jobdetails, aes(x = factor(highest_edu)))+
+  geom_histogram(stat = "count")+
+  theme_bw()+
+  labs(x = "Highest Education Received",
+       y = "Count",
+       title = "Counts of Highested Education Received from 2011 to 2017")
+
+summary(factor(df_jobdetails$highest_edu))
+```
+
+There are an invisible number of "Undetermined" but a quick check revealed there are 16 belonging to that category and no negative values. Either there wer no invalid responses or more likely, they were bundled into 10. Either way, there's no need to remove negative values and the codes will be converted to meaningful labels.
+
+```{r convert highested education codes to labels}
+# Convert highest edu to label from code
+# Import external file
+highestedu <- read_csv("HigherEduCodes.csv")
+
+# Merge with the external file containing the codes
+df_jobdetails <- merge(x = df_jobdetails, y = highestedu, by.x = "highest_edu", by.y = "HECode", all.x = TRUE)
+df_jobdetails$highest_edu <- df_jobdetails$HETitle
+
+# Make this a factor
+df_jobdetails$highest_edu <- as.factor(df_jobdetails$highest_edu)
+df_jobdetails$highest_edu <- factor(df_jobdetails$highest_edu,
+                           levels = c("Undetermined", "Year 11 and below", "Year 12", "Cert III or IV", "Adv diploma, diploma", 
+                           "Bachelor or honours", "Grad diploma, grad certificate", "Postgrad - masters or doctorate"),
+                           ordered = TRUE) #Ordered factor
+
+summary(df_jobdetails$highest_edu)
+
+```
+
+Now we have the names for each level of highest education received.
+
+### Sex
+
+```{r}
+# Convert the sex column (0 males, 1 females) to meaningful label.
+
+# Check the current state so we can compare the future state
+table(df_jobdetails$sex)
+df_jobdetails$sex <- ifelse(df_jobdetails$sex == 1, "Male", "Female")
+
+# Check against previous state
+table(df_jobdetails$sex)
+```
+
+Female and Male labels have been applied.
+
+### Age
+
+Let's look at a boxplot to visualise the distribution of age.
+
+```{r visualise age distribution - boxplot}
+# Summary of the variable
+summary(df_jobdetails$age)
+
+# Boxplot for age
+ggplot(data = df_jobdetails, aes(y = age))+
+  geom_boxplot()+
+  theme_bw()
+```
+
+First wee see the minimum and maximum ages are 15 and 89 respectively which doesn't ring any alarm bells in terms of data integrity. The box plot shows 50% of the respondents are aged between 25 and 50, approximately. Grouping the ages into bins and plotting a histogram will help visualise the distribution differently.
+
+```{r group ages into bins and plot histogram}
+# Group the ages
+df_jobdetails$agebins <- cut(df_jobdetails$age, breaks=c(0, 20,30,40,50,60,max(df_jobdetails$age)))
+
+# Plot histogram
+ggplot(data = df_jobdetails, aes(x = agebins))+
+  geom_histogram(stat = "count", col = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  labs(x = "Age",
+       y = "Count",
+       title = "Distribution of Ages from 2011 to 2017",
+       caption = "")
+
+```
+
+Reassuringly we see no respondents aged between 0 and 10 who are in this dataset. We have a very few number of respondents aged 80+. The 70 to 80 range also have very few observations.
+
+### Clean up the data frame
+
+Next, we'll just select the values we want to continue analysing and remove some of the others that were used to derive them.
+
+```{r tidy up data frame}
+# Just select this columns needed for further analysis
+df_jobdetails <- dselect(df_jobdetails, c("hhrpid", "xwaveid", "age", "agebins", "sex", "year", "highest_edu",
+                                          "occupation_lev1", "jobmatch","job_satisfaction"))
+
+# Save
+#save(data = df_jobdetails, file = "jobdetails.rda")
+
+# Tidy up the objects
+rm(highest_edu, jobcodes, majcodes)
+```
+
+##Exploratory Data Analysis
+
+Now that the variables are selected and cleansed, we can begin EDA. However, before we explore the relationship between job satisfaction and the other predictor variables, I'd like to look at the responses by each wave. This is because if we look at counts for many of the variables, e.g. occupation, we'll be counting the same person in 17 waves (potentially) and this could influence any trends we might identify.
+
+```{r visual data set by waves}
+ggplot(data = df_jobdetails, aes(x = factor(job_satisfaction)))+
+  geom_histogram(stat = "count", col = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  facet_wrap(~ year)+
+  labs(x = "Job Satisfaction (0-10)",
+       y = "Count",
+       title = "Job Satisfaction by Waves (2011 to 2017)",
+       caption = "Distributions appear very similar across waves")
+```
+
+The distributions appear very similar. Thus, 2017 will be chosen as it is the latest year in the dataset. Future analysis will be based only on observations taken in the last wave (q) in 2017.
+
+```{r subset data to 2017}
+df_jobdetails_2017 <- filter(df_jobdetails, year == 2017)
+```
+
+We are now down to `r nrow(df_jobdetails)` observations.
+
+### Job satisfaction
+Job satisfaction is measured on a scale between 0 and 10 inclusively with 0 representing `Totally dissatisfied` and 10 representing `Totally satisfied`. First, let's revisit what this looks like for 2017..
+
+```{r}
+table(df_jobdetails$job_satisfaction)
+
+# Show distribution of data across all job satisfaction responses
+ggplot(data = df_jobdetails_2017, aes(x = as.factor(job_satisfaction)))+
+  geom_histogram(stat = "count", colour = "grey20",
+                 fill = "lightskyblue3", labels = TRUE)+
+  theme_bw()+
+  labs(x = "Job Satisfaction",
+       y = "Count",
+       title = "Job satisfaction levels for HILDA respondents (2017)")+
+  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 1))
+```
+We can see from the plot that the most popular response was 8 out of 10 as we've seen in a previous plot. It's important to note that job satisfaction is asked at the end of a series of other questions related to the topics below.
+
+-	E36a Total pay satisfaction	(ajbmspay)
+-	E36b Job security satisfaction	(ajbmssec)
+-	E36c The work itself satisfaction	(ajbmswrk)
+-	E36d The hours you work satisfaction	(ajbmshrs)
+-	E36e The flexibility to balance work and non-work commitments satisfaction	(ajbmsflx)
+
+with the final question of overall job satisfaction being asked last.
+-	E36f Overall job satisfaction	(ajbmsall)
+
+It is clear that respondents are expected answer this question in the context framed by the previous questions. This analysis does not attempt to validate the relationship between these factors and overall job satisfaction. Instead, it will explore the relationship between job satisfaction and other variables already discussed in this report.
+
+
+### Job Satisfaction and Age
+
+Let's first explore age and job satisfaction.
+```{r plot job satisfaction with age}
+# Plot job satisfaction with age
+ggplot(data = df_jobdetails_2017, aes(y= age, x = factor(job_satisfaction)))+
+  geom_boxplot(colour = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  labs(x = "Overall Job Satisfaction Level (0 - 10)",
+       y = "Age (Years)",
+       title = "Age Distributions Across Overall Job Satisfaction Responses (2017)") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 1))
+```
+
+Perhaps there is a slightly increasing median age across job satisfaction levels though this is not at all obvious given that there are dips along the way. Conservatively, there appears to be no clear pattern.
+
+```{r plot job satisfaction with age (binned)}
+# Plot histogram
+ggplot(data = df_jobdetails_2017, aes(x = factor(job_satisfaction)))+
+  geom_histogram(stat = "count", col = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  labs(x = "Overall Job Satisfaction Level (0 - 10)",
+       y = "Count",
+       title = "Age Distribution Across Overall Job Satisfaction (2017)",
+       caption = "")+
+  facet_wrap(~ agebins)
+
+```
+
+### Job Satisfaction and Sex
+
+```{r plot job satisfaction with sex}
+# Plot job satisfaction with sex
+ggplot(data = df_jobdetails_2017, aes(x = factor(job_satisfaction)))+
+  geom_bar(position = "dodge", col = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  labs(x = "Overall Job Satisfaction Level (0 - 10)",
+       y = "Count",
+       title = "Distributions Across Overall Job Satisfaction Responses for Men and Women (2017)") +
+  scale_fill_discrete(name = "Job Satisfaction")+
+  facet_wrap(~ sex)+
+  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 1))
+```
+
+
+At first we see some differences either side of the mode (8) however nothing stands out in this plot that differentiates males and females. 
+```{r plot job satisfaction with sex (proportion)}
+# Sex
+ggplot(data = df_jobdetails_2017, aes(fill = sex, x = factor(job_satisfaction)))+
+  geom_bar(position = "fill", stat = "count")+
+  labs(x = "Job Satisfaction (0-10)",
+       y = "Proportion (%)",
+       title = "Proportion of Male and Female Job Satisfaction Levels (2017)",
+       caption="Women make up a higher proportion of respondents who are very satisifed with their jobs
+       and men make up a higher proportion of respondents who are very dissatisfied with their jobs")+
+  scale_fill_discrete(name = "Sex")+
+  theme_bw()
+```
+
+In this plot we see the proportion of male and female respondents for each job satisfaction response category. If sex made no different, we would expect to see the bars across the page to be comprised on the same proportion of females / males however this is not the case. There appears to be an increasing proportion of women responding that they are satisfied with their jobs.
+
+### Job Satisfaction and Highest Education Received
+
+```{r plot job satisfaction with highest education level}
+# Plot job satisfaction with highest education level
+ggplot(data = df_jobdetails_2017, aes(x = factor(job_satisfaction)))+
+  geom_bar(position = "dodge", colour = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  labs(x = "Highest Education Received",
+       y = "Count",
+       title = "Distribution Across Overall Job Satisfaction Responses for Highest Education Received (2017)") +
+  scale_fill_discrete(name = "Job Satisfaction")+
+  facet_wrap(~ highest_edu)+
+  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 1))
+
+
+table(df_jobdetails_2017$highest_edu, df_jobdetails_2017$job_satisfaction)
+```
+
+Recall from previous analysis that there are only 16 "Undetermined" observations across all waves. Let's check this wave. The plots show a very small number.
+
+```{r investigate undertermined for 2017}
+summary(df_jobdetails_2017$highest_edu)
+
+```
+
+As suspected, there is 1 single "undetermined" observation. This will have little impact on any statistical tests performed later however without good reason to remove, it should remain in the data set as is.
+
+### Job Satisfaction and jobmatch
+
+```{r plot job satisfaction with jobmatch}
+# Plot job satisfaction with jobmatch
+ggplot(data = df_jobdetails_2017, aes(x = factor(job_satisfaction)))+
+  geom_bar(position = "dodge", colour = "grey20", fill = "lightskyblue3")+
+  theme_bw()+
+  labs(x = "Jobmatch (0 - no match, 1 - Matches at least one parent)",
+       y = "Count",
+       title = "Distribution Across Overall Job Satisfaction Responses for Jobmatch (2017)") +
+  scale_fill_discrete(name = "Job Satisfaction")+
+  facet_wrap(~ jobmatch)+
+  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 1))
+
+```
+
+```{r plot job satisfaction with jobmatch (proportion)}
+# Jobmatch
+ggplot(data = df_jobdetails_2017, aes(fill = factor(jobmatch), x = factor(job_satisfaction)))+
+  geom_bar(position = "fill", stat = "count")+
+  labs(x = "Job Satisfaction (0-10)",
+       y = "Proportion (%)",
+       title = "Proportion of Respondents with Matching Parent Occupation Job Satisfaction Levels")+
+  scale_fill_discrete(name = "Job Match")+
+  theme_bw()
+```
+
+Again we see a change in proportion across categories. There may be a slight increase in proportion of those whose occupations match their parent's as satisfaction levels increase.
+
+### Independence of categorical variables
+We can checked independence of two categorical variables by checking how different the actual values are against what we'd expect using $\chi^2 = \sum \frac{(observed - expected)^2}{expected}$
+
+#### Question
+Is there an association between job type and job satisfaction?
+
+$H_0$: There is no association between job type and job satisfaction
+$H_1$: There is some association between job type and job satisfaction
+
+```{r}
+#load(file = "jobdetails.rda")
+df_jobdetails_2017 <- filter(df_jobdetails, year == 2007)
+df_jobs_binned <- df_jobdetails_2017
+
+df_jobs_binned$job_satisfaction <- as.integer(df_jobs_binned$job_satisfaction)
+
+for (i in 1:length(df_jobs_binned$job_satisfaction)){
+  if (as.integer(df_jobs_binned$job_satisfaction[i]) < 4) {
+    df_jobs_binned$job_satisfaction[i] = 4
+}
+}
+
+#Age
+observed <- table(df_jobs_binned$agebins, df_jobs_binned$job_satisfaction)
+observed
+Xsq <- chisq.test(observed)
+Xsq
+
+#Sex
+observed <- table(df_jobs_binned$sex, df_jobs_binned$job_satisfaction)
+Xsq <- chisq.test(observed)
+Xsq
+
+#Highest Education
+observed <- table(df_jobs_binned$highest_edu, df_jobs_binned$job_satisfaction)
+observed
+Xsq <- chisq.test(observed)
+Xsq
+
+# To fix "Undetermined" category
+df_jobdetails_2017 <- filter(df_jobdetails_2017, highest_edu != "Undetermined")
+df_jobdetails_2017$highest_edu <- factor(df_jobdetails_2017$highest_edu,
+                           levels = c("Year 11 and below", "Year 12", "Cert III or IV", "Adv diploma, diploma", 
+                           "Bachelor or honours", "Grad diploma, grad certificate", "Postgrad - masters or doctorate"),
+                           ordered = TRUE) #Ordered factor
+df_jobs_binned <- df_jobdetails_2017
+summary(df_jobs_binned$highest_edu)
+
+for (i in 1:length(df_jobs_binned$job_satisfaction)){
+  if (as.integer(df_jobs_binned$job_satisfaction[i]) < 4) {
+    df_jobs_binned$job_satisfaction[i] = 4
+}
+}
+
+observed <- table(df_jobs_binned$highest_edu, df_jobs_binned$job_satisfaction)
+observed
+Xsq <- chisq.test(observed)
+Xsq
+
+
+#Jobmatch
+observed <- table(df_jobs_binned$jobmatch, df_jobs_binned$job_satisfaction)
+observed
+Xsq <- chisq.test(observed)
+Xsq
+```
+
+## Conclusion
+
+All variables appear to have some relationship with job satisfaction. The significance for each test was below the conventional 0.05 however jobmatch showed a value closer to the threshold than other variables indicating less confidence that the result could be explained by random sampling. It is important to note that the size and direction of the association is unknown however the exploratory data analysis shows that there is a positive relationship between sex:female and overall job satisfaction. This is also the case for jobmatch. Respondents whose occupation matched at least one of their parents’ appeared to represent a greater a proportion of respondents in the satisfied categories than unsatisfied.
+
+Cross-wave information for: _RTEXPRI
+Variable:	    _RTEXPRI    -    Expects retirement income to be more than enough / just enough / not enough to maintain standard of living
+Subject Area:	   LABOUR FORCE - Retirement
+Categories/Coding:	   1 More than sufficient to maintain your current standard of living
+   2 Just enough to maintain your current standard of living
+   3 Not enough to maintain your current standard of living
